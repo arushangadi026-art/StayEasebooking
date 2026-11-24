@@ -1,0 +1,6 @@
+{
+  "name": "STAYEASE — Hotel Booking & Management System",
+  "description": "Find Comfort. Book with Ease. Full-stack luxury hospitality hotel booking and management application with Node.js, Express, JSON storage, Bootstrap 5 lab modules, and academic Word documentation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

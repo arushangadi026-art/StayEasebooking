@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>STAYEASE — Promotional Events (Lab 8 Bootstrap 5 Modal)</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      crossorigin="anonymous"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --se-cream: #FAF6F0;
+        --se-ivory: #FFFDF9;
+        --se-beige: #F2EAE0;
+        --se-sand: #E4D7C5;
+        --se-caramel: #A66A38;
+        --se-coffee: #4A3426;
+        --se-espresso: #2D1D14;
+      }
+      body {
+        background-color: var(--se-cream);
+        color: var(--se-espresso);
+        font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+      }
+      h1, h2, h3, .navbar-brand, .modal-title {
+        font-family: "Playfair Display", Georgia, serif;
+      }
+      .navbar-stayease {
+        background-color: var(--se-ivory);
+        border-bottom: 1px solid var(--se-sand);
+      }
+      .card-event {
+        background-color: var(--se-ivory);
+        border: 1px solid var(--se-sand);
+        border-radius: 16px;
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .card-event:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(45, 29, 20, 0.08);
+      }
+      .event-img {
+        height: 210px;
+        object-fit: cover;
+        width: 100%;
+      }
+      .btn-espresso {
+        background-color: var(--se-espresso);
+        border-color: var(--se-espresso);
+        color: var(--se-cream);
+        font-weight: 600;
+      }
+      .btn-espresso:hover {
+        background-color: var(--se-coffee);
+        border-color: var(--se-coffee);
+        color: #FFFDF9;
+      }
+      .alert-warm {
+        background-color: var(--se-beige);
+        border: 1px solid var(--se-sand);
+        color: var(--se-espresso);
+      }
+      .modal-content {
+        background-color: var(--se-ivory);
+        border: 1px solid var(--se-sand);
+        border-radius: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Bootstrap 5 Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-stayease py-3">
+      <div class="container">
+        <a class="navbar-brand fw-bold fs-4 text-dark" href="/">STAYEASE</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#lab8Nav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="lab8Nav">
+          <ul class="navbar-nav ms-auto gap-lg-3 align-items-lg-center">
+            <li class="nav-item"><a class="nav-link text-dark" href="/">Home</a></li>
+            <li class="nav-item"><a class="nav-link text-dark" href="/lab7-register.html">Register (Lab 7)</a></li>
+            <li class="nav-item"><a class="nav-link text-dark" href="/lab5-http-server">HTTP Server (Lab 5)</a></li>
+            <li class="nav-item">
+              <a class="btn btn-espresso btn-sm ms-lg-2" href="/">Open Full App</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container py-5">
+      <div class="mb-4">
+        <div class="small text-secondary mb-1">
+          Lab 8 Demonstration · Bootstrap 5 Navbar, Alerts, Cards, Modal &amp; Backend JSON Persistence
+        </div>
+        <h1 class="display-6 fw-bold">Curated Heritage Events &amp; Special Stays</h1>
+        <p class="text-secondary">
+          Reserve your seat at seasonal STAYEASE culinary and cultural evenings. All registrations persist directly to
+          <code>data/eventRegistrations.json</code>.
+        </p>
+      </div>
+
+      <!-- Bootstrap Alert -->
+      <div id="pageAlert" class="alert alert-warm mb-4" role="alert">
+        Select any hospitality gathering below and click <strong>Register Now</strong> to open the Bootstrap 5 modal confirmation flow.
+      </div>
+
+      <!-- Event Cards Grid -->
+      <div id="eventsGrid" class="row g-4 mb-5"></div>
+
+      <!-- Persisted Registrations Table -->
+      <section class="card card-event p-4">
+        <h2 class="h4 mb-3">Recent Persisted Event Registrations (JSON Live Data)</h2>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr class="text-secondary small">
+                <th>Reference</th>
+                <th>Event</th>
+                <th>Guest Name</th>
+                <th>Guests</th>
+              </tr>
+            </thead>
+            <tbody id="registrationsBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bootstrap 5 Registration Modal -->
+    <div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header border-bottom">
+            <h5 class="modal-title" id="eventModalLabel">Register for Event</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div id="modalFeedback" class="mb-3"></div>
+            <form id="modalEventForm">
+              <input type="hidden" id="modalEventId" />
+              <div class="mb-3">
+                <label class="form-label small text-secondary">Selected Gathering</label>
+                <div id="modalEventName" class="fw-semibold"></div>
+              </div>
+              <div class="mb-3">
+                <label for="evFullName" class="form-label">Full Name *</label>
+                <input type="text" class="form-control" id="evFullName" required minlength="2" />
+              </div>
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <label for="evEmail" class="form-label">Email *</label>
+                  <input type="email" class="form-control" id="evEmail" required />
+                </div>
+                <div class="col-md-6">
+                  <label for="evMobile" class="form-label">Mobile *</label>
+                  <input type="tel" class="form-control" id="evMobile" required minlength="10" />
+                </div>
+              </div>
+              <div class="row g-3 mb-3">
+                <div class="col-md-5">
+                  <label for="evGuests" class="form-label">Number of Guests *</label>
+                  <input type="number" class="form-control" id="evGuests" min="1" max="8" value="2" required />
+                </div>
+                <div class="col-md-7">
+                  <label for="evNotes" class="form-label">Special Preferences</label>
+                  <input type="text" class="form-control" id="evNotes" placeholder="Dietary or seating note" />
+                </div>
+              </div>
+              <div class="d-grid">
+                <button type="submit" id="modalSubmitBtn" class="btn btn-espresso">
+                  Confirm Event Registration
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      const eventsGrid = document.getElementById('eventsGrid');
+      const registrationsBody = document.getElementById('registrationsBody');
+      const modalEl = document.getElementById('eventModal');
+      const bsModal = new bootstrap.Modal(modalEl);
+      const modalForm = document.getElementById('modalEventForm');
+      const modalFeedback = document.getElementById('modalFeedback');
+      const pageAlert = document.getElementById('pageAlert');
+
+      async function loadEvents() {
+        const res = await fetch('/api/events');
+        const data = await res.json();
+
+        eventsGrid.textContent = '';
+        for (const ev of data.events) {
+          const col = document.createElement('div');
+          col.className = 'col-12 col-md-6';
+
+          const card = document.createElement('div');
+          card.className = 'card card-event h-100';
+
+          const img = document.createElement('img');
+          img.src = ev.image;
+          img.alt = ev.title;
+          img.className = 'event-img';
+          card.appendChild(img);
+
+          const body = document.createElement('div');
+          body.className = 'card-body d-flex flex-column p-4';
+
+          const meta = document.createElement('div');
+          meta.className = 'small text-secondary mb-1';
+          meta.textContent = ev.city + ' · ' + ev.date + ' · ' + ev.seatsRemaining + ' seats left';
+          body.appendChild(meta);
+
+          const title = document.createElement('h3');
+          title.className = 'h5 mb-2';
+          title.textContent = ev.title;
+          body.appendChild(title);
+
+          const desc = document.createElement('p');
+          desc.className = 'small text-secondary flex-grow-1';
+          desc.textContent = ev.description;
+          body.appendChild(desc);
+
+          const foot = document.createElement('div');
+          foot.className = 'd-flex justify-content-between align-items-center pt-3 border-top';
+
+          const price = document.createElement('div');
+          price.className = 'fw-semibold';
+          price.textContent = '₹' + Number(ev.pricePerGuest).toLocaleString('en-IN') + ' / guest';
+          foot.appendChild(price);
+
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'btn btn-espresso btn-sm';
+          btn.textContent = 'Register Now';
+          btn.addEventListener('click', () => {
+            document.getElementById('modalEventId').value = ev.id;
+            document.getElementById('modalEventName').textContent = ev.title + ' (' + ev.city + ')';
+            modalFeedback.textContent = '';
+            modalForm.reset();
+            bsModal.show();
+          });
+          foot.appendChild(btn);
+
+          body.appendChild(foot);
+          card.appendChild(body);
+          col.appendChild(card);
+          eventsGrid.appendChild(col);
+        }
+
+        registrationsBody.textContent = '';
+        for (const reg of data.registrations) {
+          const tr = document.createElement('tr');
+          const cells = [reg.registrationRef, reg.eventTitle, reg.fullName, String(reg.guestsCount)];
+          for (const c of cells) {
+            const td = document.createElement('td');
+            td.textContent = c;
+            tr.appendChild(td);
+          }
+          registrationsBody.appendChild(tr);
+        }
+      }
+
+      modalForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        modalFeedback.textContent = '';
+        const submitBtn = document.getElementById('modalSubmitBtn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Saving Registration...';
+
+        try {
+          const res = await fetch('/api/events', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              eventId: document.getElementById('modalEventId').value,
+              fullName: document.getElementById('evFullName').value.trim(),
+              email: document.getElementById('evEmail').value.trim(),
+              mobile: document.getElementById('evMobile').value.trim(),
+              guestsCount: Number(document.getElementById('evGuests').value),
+              notes: document.getElementById('evNotes').value.trim(),
+            }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            const errAlert = document.createElement('div');
+            errAlert.className = 'alert alert-danger py-2 mb-0';
+            errAlert.textContent = data.error || 'Could not register.';
+            modalFeedback.appendChild(errAlert);
+          } else {
+            bsModal.hide();
+            pageAlert.className = 'alert alert-success mb-4';
+            pageAlert.textContent =
+              'Confirmed! ' + data.message + ' — Saved permanently in data/eventRegistrations.json.';
+            await loadEvents();
+          }
+        } catch {
+          const errAlert = document.createElement('div');
+          errAlert.className = 'alert alert-danger py-2 mb-0';
+          errAlert.textContent = 'Connection error while submitting registration.';
+          modalFeedback.appendChild(errAlert);
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Confirm Event Registration';
+        }
+      });
+
+      loadEvents();
+    </script>
+  </body>
+</html>
